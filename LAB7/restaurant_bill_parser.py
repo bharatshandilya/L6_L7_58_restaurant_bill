@@ -1,27 +1,82 @@
 def clean_dish_name(name):
+    """Remove menu-special markers and title-case a dish name.
+
+    Invalid non-string inputs return an empty string instead of raising
+    an exception. Normal string inputs retain the original behaviour.
     """
-    Removes the chef's-special markers (*, #, ~) and title-cases the name.
-    Assumes name is a non-empty string.
-    """
+    if not isinstance(name, str):
+        return ""
+
     name = name.strip()
-    for ch in ['*', '#', '~']:
-        name = name.replace(ch, '')
+
+    for marker in ("*", "#", "~"):
+        name = name.replace(marker, "")
+
     return name.title()
 
 def parse_item_prices(text):
+    """Parse comma-separated, non-negative whole-number prices.
+
+    Returns an empty list for non-string, empty, or malformed input.
+    The complete input is rejected if any token is invalid.
     """
-    Parses comma-separated prices into a list of ints.
-    Assumes every price is a whole number.
-    """
-    return [int(price) for price in text.split(',')]
+    if not isinstance(text, str):
+        return []
+
+    text = text.strip()
+
+    if not text:
+        return []
+
+    prices = []
+
+    for token in text.split(","):
+        token = token.strip()
+
+        if not token or not token.isdecimal():
+            return []
+
+        try:
+            price = int(token)
+        except (TypeError, ValueError):
+            return []
+
+        if price < 0:
+            return []
+
+        prices.append(price)
+
+    return prices
 
 def split_amount(text):
+    """Return the whole-number share for a TOTAL/PEOPLE bill split.
+
+    Invalid input, negative totals, or a non-positive people count
+    return 0. Integer floor division is retained from the original code.
     """
-    Splits 'TOTAL/PEOPLE' into the amount each person pays.
-    Assumes both values are whole numbers and people is not zero.
-    """
-    total, people = text.split('/')
-    return int(total) // int(people)
+    if not isinstance(text, str):
+        return 0
+
+    parts = text.split("/")
+
+    if len(parts) != 2:
+        return 0
+
+    total_text, people_text = (part.strip() for part in parts)
+
+    if not total_text.isdecimal() or not people_text.isdecimal():
+        return 0
+
+    try:
+        total = int(total_text)
+        people = int(people_text)
+    except (TypeError, ValueError):
+        return 0
+
+    if total < 0 or people <= 0:
+        return 0
+
+    return total // people
 
 def main():
     print("==== Running clean_dish_name ====")
